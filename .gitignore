@@ -37,3 +37,4 @@ pytest_cache/
 *.pyo
 *.pyd
 allure_results/
+allure-report/
