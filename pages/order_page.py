@@ -1,57 +1,48 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.wait import WebDriverWait
-from pages.order_page_details import OrderPageDetails
+from pages.base_page import BasePage
+from locators.order_locators import OrderPageLocators
 
 
-class OrderPage:
-    OFFER_TITLE = (By.XPATH, ".//div[contains(text(),'Для кого самокат')]")
-    INPUT_FIRST_NAME = (By.XPATH, ".//input[contains(@placeholder,'Имя')]")
-    INPUT_LAST_NAME = (By.XPATH, ".//input[contains(@placeholder,'Фамилия')]")
-    ADDRESS = (By.XPATH, ".//input[contains(@placeholder,'Адрес: куда привезти заказ')]")
-    SUBWAY = (By.XPATH, ".//input[contains(@placeholder,'Станция метро')]")
-    SUBWAY_LIST_CLICK = ".//ul[@class='select-search__options']//div[text()='{}']"
-    PHONE_NUMBER = (By.XPATH, ".//input[contains(@placeholder,'Телефон: на него позвонит курьер')]")
-    FURTHER_BUTTON = (By.XPATH, ".//button[text()='Далее']")
-
-
+class OrderPage(BasePage):
+   
     def __init__(self, driver):
-        self.driver = driver
-        self.wait = WebDriverWait(self.driver, 3)
+        super().__init__(driver)
+
+    def order_page_is_header_visible(self):
+        return self.is_element_present(OrderPageLocators.OFFER_TITLE)
 
     def wait_for_order_load_page(self):
-        self.wait.until(expected_conditions.visibility_of_element_located(self.OFFER_TITLE))
+        self.wait_for_page_to_load(OrderPageLocators.OFFER_TITLE)
 
     def set_first_name(self,first_name):
-        self.driver.find_element(*self.INPUT_FIRST_NAME).send_keys(first_name)
+        self.set_text(OrderPageLocators.INPUT_FIRST_NAME,first_name)
         
     def set_last_name(self, last_name):
-        self.driver.find_element(*self.INPUT_LAST_NAME).send_keys(last_name)
+        self.set_text(OrderPageLocators.INPUT_LAST_NAME,last_name)
 
     def set_address(self, address):
-        self.driver.find_element(*self.ADDRESS).send_keys(address)
+        self.set_text(OrderPageLocators.ADDRESS,address)
 
     def set_subway(self, subway):
-        self.driver.find_element(*self.SUBWAY).click()
-        self.driver.find_element(*self.SUBWAY).send_keys(subway)
-        current_xpath = self.SUBWAY_LIST_CLICK.format(subway)
-        self.wait.until(expected_conditions.element_to_be_clickable((By.XPATH, current_xpath))).click()
-  
+        self.click_on_element(OrderPageLocators.SUBWAY)
+        self.set_text(OrderPageLocators.SUBWAY,subway)
+        current_xpath = OrderPageLocators.SUBWAY_LIST_CLICK.format(subway)
+        locator = (By.XPATH,current_xpath)
+        self.wait_element_to_be_clickable(locator)
+        self.click_on_element(locator)
+
     def set_phone_number(self, phone_number):
-        self.driver.find_element(*self.PHONE_NUMBER).send_keys(phone_number)
+        self.set_text(OrderPageLocators.PHONE_NUMBER,phone_number)
   
     def click_further_button(self):
-        self.wait.until(expected_conditions.visibility_of_element_located(self.FURTHER_BUTTON))
-        self.driver.find_element(*self.FURTHER_BUTTON).click() 
-        return OrderPageDetails(self.driver)
+        self.wait_visibility_of_element_located(OrderPageLocators.FURTHER_BUTTON)
+        self.click_on_element(OrderPageLocators.FURTHER_BUTTON)
 
-
-    def offer(self,first_name,last_name,address,subway,phone_number):
+    def fill_first_order_step(self,first_name,last_name,address,subway,phone_number):
         self.wait_for_order_load_page()
         self.set_first_name(first_name)
         self.set_last_name(last_name)
         self.set_address(address)
         self.set_subway(subway)
         self.set_phone_number(phone_number)
-        
-        return self.click_further_button()
+        self.click_further_button()

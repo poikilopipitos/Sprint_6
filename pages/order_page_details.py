@@ -1,65 +1,50 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.wait import WebDriverWait
+from pages.base_page import BasePage
+from locators.order_details_locators import OrderPageDetailsLocators
 
 
-class OrderPageDetails:
+class OrderPageDetails(BasePage):
 
-    OFFER_PAGE_DETAIL_TITLE = (By.XPATH, ".//div[text()='Про аренду']")
-    FURTHER_BUTTON = (By.XPATH, ".//button[text()='Далее']")
-    DATE_OFFER = (By.XPATH, ".//input[contains(@placeholder,'Когда привезти самокат')]")
-    DATE_OFFER_LIST = (By.XPATH, ".//div[(@class='react-datepicker__week')]//div[@tabindex='0']")
-    PERIOD_RENT = (By.CLASS_NAME, 'Dropdown-placeholder')
-    PERIOD_RENT_LIST = ".//div[contains(@class,'Dropdown-option') and contains(text(),'{}')]"
-    PERIOD_RENT_CONTROL = (By.XPATH, ".//div[@class='Dropdown-control']")
-    COMMENT_COURIER = (By.XPATH, ".//input[@placeholder='Комментарий для курьера']")
-    ORDER_BUTTON_UP = (By.XPATH, ".//div[contains(@class, 'Header')]//button[text()='Заказать']")
-    ORDER_BUTTON_DOWN = (By.XPATH, ".//div[contains(@class, 'Order_Buttons')]//button[text()='Заказать']")
-    TITLE = (By.XPATH, ".//div[text()='Хотите оформить заказ?']")
-    BUTTON_YES = (By.XPATH, ".//button[text()='Да']")
-    TITLE_ORDER = (By.XPATH, ".//div[text()='Заказ оформлен']")
 
     def __init__(self, driver):
-        self.driver = driver
-        self.wait = WebDriverWait(self.driver, 3)
+        super().__init__(driver)
+
+    def order_page_details_is_header_visible(self):
+        return self.is_element_present(OrderPageDetailsLocators.OFFER_PAGE_DETAIL_TITLE)
 
     def wait_for_order_details_load_page(self):
-        return self.wait.until(expected_conditions.visibility_of_element_located(self.OFFER_PAGE_DETAIL_TITLE))
+        self.wait_for_page_to_load(OrderPageDetailsLocators.OFFER_PAGE_DETAIL_TITLE)
 
     def set_date_offer(self, date):
-        self.driver.find_element(*self.DATE_OFFER).send_keys(date)
-        date_offer_list = self.driver.find_element(*self.DATE_OFFER_LIST)
-        date_offer_list.click()
+        self.set_text(OrderPageDetailsLocators.DATE_OFFER,date)
+        self.click_on_element(OrderPageDetailsLocators.DATE_OFFER_LIST)
   
     def set_period_rent(self, period_rent):
-        self.driver.find_element(*self.PERIOD_RENT).click()
-        xpath = self.PERIOD_RENT_LIST.format(period_rent)
-        self.wait.until(expected_conditions.element_to_be_clickable((By.XPATH, xpath))).click()
+        self.click_on_element(OrderPageDetailsLocators.PERIOD_RENT)
+        xpath = OrderPageDetailsLocators.PERIOD_RENT_LIST.format(period_rent)
+        locator = (By.XPATH,xpath)
+        self.click_on_element(locator)
 
     def set_color(self, color_name):
-        color_locator = (By.ID,color_name)
-        self.driver.find_element(*color_locator).click()
+        locator = (By.ID,color_name)
+        self.click_on_element(locator )
 
     def set_comment_courier(self,comment_courier):
-        self.driver.find_element(*self.COMMENT_COURIER).send_keys(comment_courier)
-
-    def click_order_button_up(self):
-        self.wait.until(expected_conditions.element_to_be_clickable(self.ORDER_BUTTON_UP)).click()
+        self.set_text(OrderPageDetailsLocators.COMMENT_COURIER,comment_courier)
         
     def click_order_button_down(self):
-        self.wait.until(expected_conditions.element_to_be_clickable(self.ORDER_BUTTON_DOWN)).click()
+        self.click_on_element(OrderPageDetailsLocators.ORDER_BUTTON_DOWN)
         
     def wait_offer_title(self):
-        self.wait.until(expected_conditions.visibility_of_element_located(self.TITLE))
+        self.is_header_visible(OrderPageDetailsLocators.TITLE)
 
     def click_button_yes(self):
-        self.wait.until(expected_conditions.element_to_be_clickable(self.BUTTON_YES)).click()
+        self.click_on_element(OrderPageDetailsLocators.BUTTON_YES)
        
     def wait_order_title(self):
-        return self.wait.until(expected_conditions.visibility_of_element_located(self.TITLE_ORDER))
+        self.is_header_visible(OrderPageDetailsLocators.TITLE_ORDER)
 
-
-    def offer_details(self,date,period_rent,color_name,comment_courier):
+    def complete_order_details_form(self,date,period_rent,color_name,comment_courier):
         self.wait_for_order_details_load_page()
         self.set_date_offer(date)
         self.set_period_rent(period_rent)
@@ -69,5 +54,7 @@ class OrderPageDetails:
         self.wait_offer_title()
         self.click_button_yes()
         
-
+    def order_header_visible(self):
+        return self.is_element_present(OrderPageDetailsLocators.TITLE_ORDER)
+        
         
